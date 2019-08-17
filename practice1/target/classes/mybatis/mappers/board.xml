@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- mapper 태그 안에 SQL을 작성  -->
+<mapper namespace="board">
+
+<insert id="register" parameterType="Board">
+
+insert into springboard(title,content,ip,id) 
+values(#{title},#{content},#{ip},#{id})
+
+</insert>
+
+<!-- 게시글 목록보기를 위한 SQL -->
+<select id="list" parameterType="SearchCriteriaEX" resultType="Board" >
+select bno, title, readcnt, regdate, springboard.id
+from reg1 join springboard 
+<include refid="search"></include>
+order by bno desc 
+limit #{pageStart} , #{resultPage}
+</select>
+
+<!-- 글번호에 해당하는 데이터의 조회수를 1증가 시키는 SQL -->
+<update id="updatereadcnt" parameterType="java.lang.Integer">
+update springboard
+set readcnt = readcnt + 1
+where bno = #{bno}
+</update>
+
+<!-- 글번호에 해당하는 데이터 가져오기  -->
+<select id="detail" parameterType="java.lang.Integer" resultType="Board">
+select bno, title, content, readcnt, regdate, updatedate, ip, reg1.id
+from reg1 join springboard 
+on reg1.id = springboard.id and bno = #{bno}
+</select>
+
+<!-- 글번호를 가지고 tiltle, content, updatedate를 수정하는 SQL -->
+<update id="update" parameterType="Board">
+update springboard
+set title = #{title}, content = #{content}, updatedate = default DATE_FORMAT(now(),"%Y-%m-%d %H:%i:%S")
+where bno = #{bno}
+</update>
+
+<!-- 글 번호를 가지고 삭제하는 SQL -->
+<delete id="delete" parameterType="java.lang.Integer">
+delete from springboard
+where bno = #{bno}
+</delete>
+
+<!-- 전체 데이터를 가져오는 SQL문 -->
+<select id = "totalCount" parameterType="SearchCriteriaEX" resultType = "java.lang.Integer">
+	select count(bno) 
+	from springboard, reg1
+	<include refid = "search"></include>
+</select>
+
+	<!-- 동작 SQL : 다른 SQL에 포함시켜서 사용 -->
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'n'.toString()">
+				where springboard.id = reg1.id
+			</if>
+			<!-- title에 keyword가 포함된 -->
+			<if test="searchType == 't'.toString()">
+				where springboard.id = reg1.id and
+				title like '%' || #{keyword} || '%'
+			</if>
+			<!-- content에 keyword가 포함된 -->
+			<if test="searchType == 'c'.toString()">
+				where springboard.id = reg1.id and
+				content like '%' || #{keyword} || '%'
+			</if>
+			<!-- nickname에 keyword가 포함된 -->
+			<if test="searchType == 'w'.toString()">
+				where springboard.id = reg1.id and
+				nickname like '%' || #{keyword} || '%'
+			</if>
+			<!--title 또는 content에 keyword가 포함된 -->
+			<if test="searchType == 'tc'.toString()">
+				where springboard.id = reg1.id and(
+				title like '%' || #{keyword} || '%' or
+				content like '%' || #{keyword} || '%')
+			</if>
+		</if>
+		<if test="searchType==null">
+			where springboard.id = reg1.id
+		</if>
+	</sql>
+
+
+	<!-- 글번호를 가지고 댓글 개수를 가져오는 SQL -->
+	<select id="replycnt" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		select count(*)
+		from springreply
+		where bno = #{bno}
+	</select>
+
+</mapper>

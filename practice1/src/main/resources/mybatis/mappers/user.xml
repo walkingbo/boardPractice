@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- mapper 태그 안에 SQL을 작성  -->
+<mapper namespace="user">
+
+<!-- 로그인처리시 -->
+<select id="login" parameterType="java.lang.String" resultType="User">
+	select regno, id, pw, name
+	from reg1
+	where id=#{id}
+</select>
+
+<!-- 회원가입시 아이디 중복검사 -->
+<select id="idcheck" parameterType="java.lang.String"
+resultType="java.lang.String">
+select id
+from reg1
+where id=#{id}
+</select>
+
+<!-- 회원 가입에 사용할 SQL # 안에 작성하는 것은
+VO 클래스의 프로퍼티 이름 -->
+
+<insert id="register" parameterType="User">
+
+insert into reg1(id,pw,name,birth,gender,email,phone) 
+values(#{id},#{pw},#{name},#{birth},#{gender},#{email},#{phone})
+
+</insert>
+
+
+</mapper>
